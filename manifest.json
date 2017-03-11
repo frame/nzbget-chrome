@@ -15,6 +15,7 @@
 		,"img/nzbget-arrow.svg"
 	],
 	"name": "nzbget-chrome",
+	"short_name": "nzbget-chrome",
 	"options_page": "options.html",
 	"permissions": [ "*://*/", "contextMenus", "tabs", "notifications", "storage", "background" ],
 	"version": "1.5",
