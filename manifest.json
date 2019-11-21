@@ -14,7 +14,8 @@
 		"img/icon16.png"
 		,"img/nzbget-arrow.svg"
 	],
-	"name": "nzbget-chrome",
+	"name": "nzbget-chrome-phalanx",
+	"short_name": "nzbget-chrome-phalanx",
 	"options_ui": {
 		"page": "options.html",
 		"chrome_style": false
