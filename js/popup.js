@@ -32,13 +32,13 @@
         }
 
         return dayDiff === 0 && (
-                diff < 60 && 'just now' ||
-                diff < 120 && '1 min ago' ||
-                diff < 3600 && Math.floor(diff / 60) + ' mins ago' ||
-                diff < 7200 && '1 hour ago' ||
-                diff < 86400 && Math.floor(diff / 3600) + ' hours ago') ||
-               dayDiff === 1 && 'Yesterday ' + inputDate.toLocaleTimeString() ||
-               inputDate.toLocaleString();
+            diff < 60 && 'just now' ||
+            diff < 120 && '1 min ago' ||
+            diff < 3600 && Math.floor(diff / 60) + ' mins ago' ||
+            diff < 7200 && '1 hour ago' ||
+            diff < 86400 && Math.floor(diff / 3600) + ' hours ago') ||
+            dayDiff === 1 && 'Yesterday ' + inputDate.toLocaleTimeString() ||
+            inputDate.toLocaleString();
     }
 
     /**
@@ -101,7 +101,7 @@
             ev.preventDefault();
             ev.dataTransfer.dropEffect = 'move';
 
-            if(this.tagName === 'DOWNLOAD-ITEM') {
+            if(this.tagName === 'NG-DOWNLOAD-ITEM') {
                 if(dragging.offsetHeight) {
                     dragging.storedHeight = dragging.offsetHeight;
                 }
@@ -191,21 +191,23 @@
      * @return {void}
      */
     function downloadPost(item) {
-        var elm = document.querySelector('download-item[rel="' +
+        var elm = document.querySelector('ng-download-item[rel="' +
                   item.NZBID + '"]'),
             remainingMB = item.RemainingSizeMB - item.PausedSizeMB;
 
         if(!elm) {
-            elm = $E({tag: 'download-item', rel: item.NZBID});
+            elm = $E({tag: 'ng-download-item', rel: item.NZBID});
             elm.item = item;
+            new NgDownloadItem(elm);
             setupDraggable(elm);
             document.querySelector('#download_list').appendChild(elm);
         }
+        elm.refresh();
 
         item.estRem = api.status.DownloadRate ?
-                      toHRTimeLeft((totalMBToDownload + remainingMB) *
-                                    1024 / (api.status.DownloadRate / 1024)) :
-                      '';
+            toHRTimeLeft((totalMBToDownload + remainingMB) *
+                1024 / (api.status.DownloadRate / 1024))
+            : '';
         totalMBToDownload += remainingMB;
     }
 
@@ -220,7 +222,7 @@
     function cleanupList(dataObj, contEl) {
         var i = 0,
             sortNeeded = false,
-            trElements = contEl.querySelectorAll('download-item,div.post');
+            trElements = contEl.querySelectorAll('ng-download-item,div.post');
 
         for(var k = 0; k < trElements.length; k++) {
             var id = trElements[k].item.NZBID;
@@ -242,7 +244,7 @@
             });
             for(var j in order) {
                 var el = contEl.querySelector(
-                    'download-item[rel="' + order[j] + '"]');
+                    'ng-download-item[rel="' + order[j] + '"]');
                 if(el) {
                     contEl.appendChild(contEl.removeChild(el));
                 }
@@ -267,8 +269,8 @@
         var downloadPaused = window.ngAPI.status.Download2Paused;
 
         document.querySelector('#tgl_pause').innerText = downloadPaused ?
-                                                         'play_arrow' :
-                                                         'pause';
+            'play_arrow' :
+            'pause';
 
         // Set "global" labels
         var speedLabel = '';
@@ -289,8 +291,9 @@
             remainingLbl === 0 ? '' : parse.toHRDataSize(remainingLbl);
         document.querySelector('#lbl_remainingdisk').innerText =
             parse.toHRDataSize(
-                parse.bigNumber(window.ngAPI.status.FreeDiskSpaceHi,
-                                window.ngAPI.status.FreeDiskSpaceLo)) +
+                parse.bigNumber(
+                    window.ngAPI.status.FreeDiskSpaceHi,
+                    window.ngAPI.status.FreeDiskSpaceLo)) +
                 ' free';
     }
 
@@ -316,8 +319,9 @@
             downloadPost(sortable[k]);
         }
 
-        cleanupList(window.ngAPI.groups,
-                    document.querySelector('#download_list'));
+        cleanupList(
+            window.ngAPI.groups,
+            document.querySelector('#download_list'));
 
         var inactiveContainer =
             document.querySelector('#download_container .inactive');
@@ -341,7 +345,7 @@
         item.status = parsed[0];
 
         post = document.querySelector(
-                '#history_list [rel="' + item.NZBID + '"]');
+            '#history_list [rel="' + item.NZBID + '"]');
         var update = post !== null;
 
         if(update) {
@@ -352,26 +356,37 @@
             post = $E({tag: 'div', className: 'post', rel: item.NZBID});
             post.item = item;
 
+            let [status, reason] = item.Status.toLowerCase().split('/') ||
+                [item.status, ''];
+
             // Tag
             post.appendChild($E({tag: 'div', className: 'tag ' + item.status}))
-                .appendChild($E({tag: 'span', text: item.status}));
+                .appendChild($E({tag: 'span', text: status}))
+                .appendChild($E({
+                    tag: 'small',
+                    text: status === 'success' ? '' : reason
+                }));
 
             // Info
             var info = post.appendChild($E({tag: 'div', className: 'info'}));
-            info.appendChild($E({tag: 'div',
-                                 text: item.Name,
-                                 className: 'title'}));
-            var details = info.appendChild($E({tag: 'div',
-                                               className: 'details'}));
-            details.appendChild($E({tag: 'div',
-                                    text: toHRTimeDiff(
-                                        new Date(item.HistoryTime * 1000)),
-                                    className: 'left'}));
-            details.appendChild($E({tag: 'div',
-                                    text: parse.toHRDataSize(
-                                        parse.bigNumber(item.FileSizeHi,
-                                                  item.FileSizeLo)),
-                                    className: 'right'}));
+            info.appendChild($E({
+                tag: 'div',
+                text: item.Name,
+                className: 'title'}));
+            var details = info.appendChild($E({
+                tag: 'div',
+                className: 'details'}));
+            details.appendChild($E({
+                tag: 'div',
+                text: toHRTimeDiff(
+                    new Date(item.HistoryTime * 1000)),
+                className: 'left'}));
+            details.appendChild($E({
+                tag: 'div',
+                text: parse.toHRDataSize(
+                    parse.bigNumber(item.FileSizeHi,
+                        item.FileSizeLo)),
+                className: 'right'}));
 
             document.querySelector('#history_list').appendChild(post);
         }
@@ -387,11 +402,11 @@
         }
         for(var i = 0; i < historyList.length; i++) {
             if(!historyList[i].Name
-                   .toLowerCase()
-                   .replace(/[^0-9a-z]+/g, ' ')
-                   .match(srchElement.value
-                          .toLowerCase()
-                          .replace(/[^0-9a-z]+/g, ' '))) {
+                .toLowerCase()
+                .replace(/[^0-9a-z]+/g, ' ')
+                .match(srchElement.value
+                    .toLowerCase()
+                    .replace(/[^0-9a-z]+/g, ' '))) {
                 continue;
             }
             filteredList.push(historyList[i]);
@@ -414,9 +429,9 @@
                 historyList = filteredList;
             }
             for(var i = 0;
-                    i < window.ngAPI.Options.get('opt_historyitems') &&
-                    i < historyList.length;
-                    i++) {
+                i < window.ngAPI.Options.get('opt_historyitems') &&
+                i < historyList.length;
+                i++) {
                 history[historyList[i].NZBID] = historyList[i];
                 history[historyList[i].NZBID].sortorder = i;
                 historyPost(historyList[i]);
@@ -428,54 +443,22 @@
 
     function resetTabs() {
         var tabs = document.querySelectorAll('.tab');
-        for(var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
-            tabs[tabIndex].classList.remove('active');
-            var container = document.getElementById(
-                tabs[tabIndex].getAttribute('data-container'));
+        for(let tab of tabs) {
+            tab.classList.remove('active');
+            let container = document.getElementById(
+                tab.getAttribute('data-container'));
             container.classList.remove('active');
         }
-    }
-
-    function modalDialog(header, body, buttons) {
-        var shroud = document.querySelector('.shroud');
-        shroud.querySelector('h2').innerHTML = header;
-        shroud.querySelector('p').innerHTML = body;
-        var btnbar = shroud.querySelector('.btnbar');
-        btnbar.innerHTML = '';
-
-        var clickFunc = function() {
-            if(this.clickfunc) {
-                this.clickfunc();
-            }
-            shroud.classList.remove('active');
-        };
-
-        for(var i in buttons) {
-            var button = $E({
-                tag: 'a',
-                text: buttons[i].title});
-
-            if(buttons[i].href) {
-                button.href = buttons[i].href;
-                button.target = '_blank';
-            } else {
-                button.href = '#';
-            }
-            button.clickfunc = buttons[i].onClick;
-            button.closeOnClick = buttons[i].closeOnClick;
-            button.addEventListener('click', clickFunc);
-
-            btnbar.appendChild(button);
-
-        }
-        shroud.classList.add('active');
     }
 
     function switchTab(event) {
         resetTabs();
         event.target.classList.add('active');
-        var container = document.getElementById(
+        let container = document.getElementById(
             event.target.getAttribute('data-container'));
+        if(container.id === 'history_container') {
+            onHistoryUpdated();
+        }
         container.classList.add('active');
     }
 
@@ -515,38 +498,34 @@
             }
         );
         onGroupsUpdated();
-        if(window.ngAPI.Options.get('opt_historyitems') === 0) {
-            document.querySelector('#history_container').style.display = 'none';
-        }
-        else {
-            onHistoryUpdated();
-        }
 
         document.querySelector('.search')
-        .addEventListener('search', function() {
-            onHistoryUpdated();
-        });
+            .addEventListener('search', function() {
+                onHistoryUpdated();
+            });
 
         onStatusUpdated();
         document.body.addEventListener('mousedown', function() {
-            var els = document.querySelectorAll('download-item');
-            for(var i = 0; i < els.length; i++) {
-                els[i].closeContextMenu();
+            var menus =  document.querySelectorAll('.contextmenu');
+            for(var i=0; i < menus.length; i++) {
+                menus[i].classList.remove('show');
             }
         });
+
         document.querySelector('#tgl_pause')
-        .addEventListener('click', function() {
-            var method = !window.ngAPI.status.Download2Paused ?
-                         'pausedownload2' :
-                         'resumedownload2';
-            window.ngAPI.sendMessage(method, [], function() {
-                window.ngAPI.updateStatus();
-                window.ngAPI.updateGroups();
+            .addEventListener('click', function() {
+                var method = !window.ngAPI.status.Download2Paused ?
+                    'pausedownload2' :
+                    'resumedownload2';
+                window.ngAPI.sendMessage(method, [], function() {
+                    window.ngAPI.updateStatus();
+                    window.ngAPI.updateGroups();
+                });
             });
-        });
+
         document.querySelector('#logo')
-        .addEventListener('click', function() {
-            window.ngAPI.switchToNzbGetTab();
-        });
+            .addEventListener('click', function() {
+                window.ngAPI.switchToNzbGetTab();
+            });
     });
 })();

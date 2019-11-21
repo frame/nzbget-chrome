@@ -15,10 +15,12 @@
 		,"img/nzbget-arrow.svg"
 	],
 	"name": "nzbget-chrome",
-	"short_name": "nzbget-chrome",
-	"options_page": "options.html",
+	"options_ui": {
+		"page": "options.html",
+		"chrome_style": false
+	},
 	"permissions": [ "*://*/", "contextMenus", "tabs", "notifications", "storage" ],
-	"version": "1.5",
+	"version": "1.6",
 	"browser_action": {
 		"default_icon": "img/icon38.png",
 		"default_popup": "popup.html"
@@ -44,6 +46,10 @@
 			"matches": [ "*://*.dognzb.cr/*" ]
 			,"js": [ "sites/common.js", "sites/dognzb.js" ]
 			,"css": [ "sites/common.css" ]
+		},{
+			"matches": [ "*://*.newzleech.com/*" ]
+			,"js": [ "sites/common.js", "sites/newzleech.js" ]
+			,"css": [ "sites/common.css", "sites/newzleech.css" ]
 		}
 	]
 }

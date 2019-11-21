@@ -22,8 +22,6 @@
         window.ngAPI = chrome.extension.getBackgroundPage().ngAPI;
         var opts = window.ngAPI.Options;
 
-        document.querySelector('name').innerText = window.ngAPI.appName;
-        document.querySelector('version').innerText = window.ngAPI.appVersion;
         document.querySelector('#opt_protocol')
         .addEventListener('change', function(evt) {
             var port = document.querySelector('#opt_port');
@@ -49,6 +47,7 @@
 
             elConnectionTest.innerText = 'Settings saved!';
             elConnectionTest.className = 'success';
+            window.close();
         });
 
 
@@ -56,7 +55,7 @@
         .addEventListener('click', function(){
             elConnectionTest.className = 'working';
             elConnectionTest.innerText = 'Trying to connect...';
-            elConnectionTest.style.webkitAnimationName = 'flip';
+            elConnectionTest.style.animationName = 'flip';
 
             var opOb = {get: function(v) {return this[v]; }};
             for(var input in inputs) {
@@ -67,11 +66,11 @@
             window.ngAPI.version(function(r){
                 elConnectionTest.innerText = 'Successfully connected ' +
                                              'to NZBGet v' + r.result;
-                elConnectionTest.style.webkitAnimationName = 'pulse';
+                elConnectionTest.style.animationName = 'pulse';
                 elConnectionTest.className = 'success';
             }, function(reason){
                 elConnectionTest.className = 'error';
-                elConnectionTest.style.webkitAnimationName = 'shake';
+                elConnectionTest.style.animationName = 'shake';
                 elConnectionTest.innerHTML = '<strong>' +
                                              'Connection failed!' +
                                              '</strong> ' + reason;
